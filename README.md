@@ -1,2 +1,4 @@
 # BayHunter2025
-Refractor BayHunte
+Refractor BayHunter
+
+This is simply a refractored test of the original BayHunter.
