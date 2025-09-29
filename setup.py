@@ -12,7 +12,7 @@ class build_ext(_build_ext):
 
     def _build_f2py_fortran(self):
         project_root = Path(__file__).parent.resolve()
-        src = (project_root / "src/BayHunter/extensions/surfdisp96.f").resolve()
+        src = (project_root / "src/extensions/surfdisp96.f").resolve()
         if not src.exists():
             raise FileNotFoundError(f"Fortran source not found: {src}")
 
