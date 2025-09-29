@@ -7,7 +7,7 @@
 # #############################
 
 import numpy as np
-from BayHunter import rfmini
+from . import rfmini
 
 
 class RFminiModRF(object):

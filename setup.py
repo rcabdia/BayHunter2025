@@ -56,9 +56,9 @@ class build_ext(_build_ext):
             shutil.copy2(extfile, build_lib_pkg / extfile.name)
 
 
-# ---- Cython/C++ extension ----
+# ---- C/C++ extension (use pre-generated C instead of .pyx) ----
 rfmini_sources = [
-    "src/extensions/rfmini/rfmini.pyx",
+    "src/extensions/rfmini/rfmini.c",   # changed from .pyx to .c
     "src/extensions/rfmini/greens.cpp",
     "src/extensions/rfmini/model.cpp",
     "src/extensions/rfmini/pd.cpp",
@@ -76,10 +76,8 @@ rfmini_ext = Extension(
     extra_link_args=[]
 )
 
-extensions = cythonize(
-    rfmini_ext,
-    compiler_directives={"language_level": "3"},
-)
+# ext_modules = cythonize(rfmini_ext, ...)  # removed cythonize
+extensions = [rfmini_ext]
 
 setup(
     name="BayHunter",
