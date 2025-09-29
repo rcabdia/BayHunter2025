@@ -15,32 +15,29 @@ import numpy as np
 
 
 class build_ext(_build_ext):
-    """
-    Build Cython/C++ extensions normally, then build the Fortran extension
-    using the f2py CLI (NumPy 2.x).
-    """
     def run(self):
         super().run()
         self._build_f2py_fortran()
 
     def _build_f2py_fortran(self):
-        src = Path("src/extensions/surfdisp96.f")
+        # Use absolute path so running in build_temp works
+        project_root = Path(__file__).parent.resolve()
+        src = (project_root / "src/extensions/surfdisp96.f").resolve()
         if not src.exists():
             raise FileNotFoundError(f"Fortran source not found: {src}")
 
-        build_temp = Path(self.build_temp) / "f2py"
+        build_temp = Path(self.build_temp).resolve() / "f2py"
         build_temp.mkdir(parents=True, exist_ok=True)
-        build_lib_pkg = Path(self.build_lib) / "BayHunter"
+        build_lib_pkg = Path(self.build_lib).resolve() / "BayHunter"
         build_lib_pkg.mkdir(parents=True, exist_ok=True)
 
         modulename = "surfdisp96_ext"
         default_f77_flags = "-O3 -ffixed-line-length-none -fbounds-check -m64"
         f77_flags = os.environ.get("FFLAGS", default_f77_flags)
 
-        # Run: python -m numpy.f2py -c src/extensions/surfdisp96.f -m surfdisp96_ext only: surfdisp96 : --f77flags=...
         cmd = [
             sys.executable, "-m", "numpy.f2py",
-            "-c", str(src),
+            "-c", str(src),            # absolute now
             "-m", modulename,
             "only:", "surfdisp96", ":",
             f"--f77flags={f77_flags}",
@@ -48,7 +45,7 @@ class build_ext(_build_ext):
 
         subprocess.run(cmd, cwd=build_temp, check=True)
 
-        # Find built extension (e.g., .so / .pyd) and copy into BayHunter/
+        # Copy the produced shared library into BayHunter/
         produced = []
         for suf in (".so", ".pyd", ".dll", ".dylib"):
             produced += list(build_temp.glob(modulename + "*" + suf))
@@ -94,8 +91,8 @@ setup(
     package_dir={"BayHunter": "src"},
     scripts=["src/scripts/baywatch"],
     package_data={"BayHunter": ["defaults/*"]},
-    ext_modules=extensions,     # Cython/C++
-    cmdclass={"build_ext": build_ext},  # adds the f2py build step
+    ext_modules=extensions,
+    cmdclass={"build_ext": build_ext},
     install_requires=[],
     python_requires=">=3.9",
 )
