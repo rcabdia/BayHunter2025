@@ -7,7 +7,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext as _build_ext
 
 from Cython.Build import cythonize
@@ -88,14 +88,12 @@ setup(
     author_email="jennifer.dreiling@gfz-potsdam.de",
     description="Transdimensional Bayesian Inversion of RF and/or SWD.",
     url="https://github.com/jenndrei/BayHunter",
-    packages=find_packages(where="src"),     # << changed
-    package_dir={"": "src"},                 # << changed
+    packages=["BayHunter"],
+    package_dir={"BayHunter": "src"},
     scripts=["src/scripts/baywatch"],
     package_data={"BayHunter": ["defaults/*"]},
-    include_package_data=True,
     ext_modules=extensions,
     cmdclass={"build_ext": build_ext},
     install_requires=[],
     python_requires=">=3.9",
-    zip_safe=False,
 )
