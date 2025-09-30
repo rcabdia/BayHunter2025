@@ -42,4 +42,6 @@ dependencies = [
   "pyzmq==27.1.0",
   "scipy==1.16.2",
   "six==1.17.0",
+  "pandas"==2.3.3,
+  "Cartopy"==0.25.0
 ]
