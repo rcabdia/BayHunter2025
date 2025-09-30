@@ -43,5 +43,5 @@ dependencies = [
   "scipy==1.16.2",
   "six==1.17.0",
   "pandas==2.3.3",
-  "cartopy=0.25.0"
+  "cartopy==0.25.0"
 ]
