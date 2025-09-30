@@ -17,7 +17,7 @@ authors = [
   { name = "Jennifer Dreiling", email = "jennifer.dreiling@gfz-potsdam.de" }
 ]
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 license = { text = "MIT" } # or the correct license if different
 keywords = ["bayesian", "inversion", "seismology", "RF", "SWD"]
 classifiers = [
