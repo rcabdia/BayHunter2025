@@ -1,18 +1,8 @@
-#!/usr/bin/env python
-from __future__ import annotations
-
-import os
-import sys
-import shutil
-import subprocess
-from pathlib import Path
-
 from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext as _build_ext
-
-from Cython.Build import cythonize
 import numpy as np
-
+from setuptools.command.build_ext import build_ext as _build_ext
+from pathlib import Path
+import os, sys, shutil, subprocess
 
 class build_ext(_build_ext):
     def run(self):
@@ -20,16 +10,13 @@ class build_ext(_build_ext):
         self._build_f2py_fortran()
 
     def _build_f2py_fortran(self):
-        # Use absolute path so running in build_temp works
         project_root = Path(__file__).parent.resolve()
-        src = (project_root / "src/extensions/surfdisp96.f").resolve()
-        if not src.exists():
-            raise FileNotFoundError(f"Fortran source not found: {src}")
+        src_f = project_root / "src/extensions/surfdisp96.f"
+        if not src_f.exists():
+            raise FileNotFoundError(f"Fortran source not found: {src_f}")
 
         build_temp = Path(self.build_temp).resolve() / "f2py"
         build_temp.mkdir(parents=True, exist_ok=True)
-        build_lib_pkg = Path(self.build_lib).resolve() / "BayHunter"
-        build_lib_pkg.mkdir(parents=True, exist_ok=True)
 
         modulename = "surfdisp96_ext"
         default_f77_flags = "-O3 -ffixed-line-length-none -fbounds-check -m64"
@@ -37,14 +24,13 @@ class build_ext(_build_ext):
 
         cmd = [
             sys.executable, "-m", "numpy.f2py",
-            "-c", str(src),            # absolute now
+            "-c", str(src_f),
             "-m", modulename,
             "only:", "surfdisp96", ":",
             f"--f77flags={f77_flags}",
         ]
         subprocess.run(cmd, cwd=build_temp, check=True)
 
-        # Copy the produced shared library into BayHunter/
         produced = []
         for suf in (".so", ".pyd", ".dll", ".dylib"):
             produced += list(build_temp.glob(modulename + "*" + suf))
@@ -52,13 +38,14 @@ class build_ext(_build_ext):
         if not produced:
             raise RuntimeError("f2py did not produce an extension module.")
 
-        for extfile in produced:
-            shutil.copy2(extfile, build_lib_pkg / extfile.name)
+        # Put it where BayHunter.surfdisp96_ext is expected to live
+        ext_fullpath = Path(self.get_ext_fullpath("BayHunter.surfdisp96_ext"))
+        ext_fullpath.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(produced[0], ext_fullpath)
 
 
-# ---- C/C++ extension (use pre-generated C instead of .pyx) ----
 rfmini_sources = [
-    "src/extensions/rfmini/rfmini.c",   # changed from .pyx to .c
+    "src/extensions/rfmini/rfmini.c",
     "src/extensions/rfmini/greens.cpp",
     "src/extensions/rfmini/model.cpp",
     "src/extensions/rfmini/pd.cpp",
@@ -73,25 +60,17 @@ rfmini_ext = Extension(
     include_dirs=[np.get_include()],
     language="c++",
     extra_compile_args=["-O3"],
-    extra_link_args=[]
 )
-
-# ext_modules = cythonize(rfmini_ext, ...)  # removed cythonize
-extensions = [rfmini_ext]
 
 setup(
     name="BayHunter",
     version="2.1",
-    author="Jennifer Dreiling",
-    author_email="jennifer.dreiling@gfz-potsdam.de",
-    description="Transdimensional Bayesian Inversion of RF and/or SWD.",
-    url="https://github.com/jenndrei/BayHunter",
+    # THIS is the important mapping for your current layout:
     packages=["BayHunter"],
-    package_dir={"BayHunter": "src"},
-    scripts=["src/scripts/baywatch"],
+    package_dir={"BayHunter": "src"},   # BayHunter => src/
     package_data={"BayHunter": ["defaults/*"]},
-    ext_modules=extensions,
+    scripts=["src/scripts/baywatch"],
+    ext_modules=[rfmini_ext],
     cmdclass={"build_ext": build_ext},
-    install_requires=[],
-    python_requires=">=3.9",
+    python_requires=">=3.11",
 )
