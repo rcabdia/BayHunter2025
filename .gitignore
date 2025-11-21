@@ -51,6 +51,7 @@ coverage.xml
 # PyCharm
 *.iml
 .idea/
+.idea/BayHunter2025.iml
 
 # VS Code
 .vscode/
@@ -66,3 +67,7 @@ venv.bak/
 
 # macOS
 .DS_Store
+
+# Ignore auto-generated test results
+tutorial/baywatch.pkl
+tutorial/results/
