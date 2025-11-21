@@ -44,5 +44,5 @@ dependencies = [
   "six==1.17.0",
   "pandas==2.3.3",
   "cartopy==0.25.0",
-  "pypdf2==3.0.1"
+  "pypdf2==2.12.1"
 ]
